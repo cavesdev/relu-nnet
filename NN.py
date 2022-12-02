@@ -179,15 +179,22 @@ def relu_backward_propagation(dA, z):
     return dz
 
 
-def single_layer_backward_propagation(dA_cur, w_cur, b_cur, z_cur, A_prev, activation):
+def single_layer_backward_propagation(
+        dA_cur,
+        w_cur,
+        b_cur,
+        z_cur,
+        A_prev,
+        activation
+):
     # Number of example
     m = A_prev.shape[1]
 
     # Part 1: Derivative for activation function
     # Select activation function
-    if activation is 'sigmoid':
+    if activation == 'sigmoid':
         backward_activation_func = sigmoid_backward_propagation
-    elif activation is 'relu':
+    elif activation == 'relu':
         backward_activation_func = relu_backward_propagation
     else:
         raise Exception('Not supported activation function')
@@ -211,28 +218,28 @@ print(db_cur)
 print(dA_prev)
 
 
-def full_backward_propagation(AL, y, caches, parameters):
+def full_backward_propagation(a_last, y, caches, parameters):
     grads = {}
-    Length = len(caches) // 2
-    m = AL.shape[1]
-    y = y.reshape(AL.shape)
+    length = len(caches) // 2
+    m = a_last.shape[1]
+    y = y.reshape(a_last.shape)
 
     # Step 1: Derivative for cost function
-    dA_cur = - (np.divide(y, AL) - np.divide((1 - y), (1 - AL)))
+    dA_cur = - (np.divide(y, a_last) - np.divide((1 - y), (1 - a_last)))
 
     # Step 2: Sigmoid backward propagation for N layer
-    w_cur = parameters['w' + str(Length)]
-    b_cur = parameters['b' + str(Length)]
-    z_cur = caches['z' + str(Length)]
-    A_prev = caches['a' + str(Length - 1)]
+    w_cur = parameters['w' + str(length)]
+    b_cur = parameters['b' + str(length)]
+    z_cur = caches['z' + str(length)]
+    A_prev = caches['a' + str(length - 1)]
 
     dA_prev, dw_cur, db_cur = single_layer_backward_propagation(dA_cur, w_cur, b_cur, z_cur, A_prev, 'sigmoid')
 
-    grads['dw' + str(Length)] = dw_cur
-    grads['db' + str(Length)] = db_cur
+    grads['dw' + str(length)] = dw_cur
+    grads['db' + str(length)] = db_cur
 
     # Step 3: relu backward propagation for 1:(N-1) layer
-    for i in reversed(range(1, Length)):
+    for i in reversed(range(1, length)):
         dA_cur = dA_prev
         w_cur = parameters['w' + str(i)]
         b_cur = parameters['b' + str(i)]
@@ -259,9 +266,7 @@ print(test_grads['db1'])
 # Step 5 Update parameters
 ########################################
 def update_parameters(parameters, grads, learning_rate):
-    Length = len(parameters) // 2
-
-    for i in (range(1, Length + 1)):
+    for i in (range(1, len(parameters) // 2 + 1)):
         parameters['w' + str(i)] -= grads['dw' + str(i)] * learning_rate
         parameters['b' + str(i)] -= grads['db' + str(i)] * learning_rate
 
@@ -283,7 +288,7 @@ X, y = make_moons(n_samples=N_SAMPLES, noise=0.2, random_state=100)
 
 
 #######################################
-# Step 6: Train Nerual Network Model
+# Step 6: Train Neural Network Model
 #######################################
 def train_model(X, y, epoch, layer_dim, learning_rate):
     # Store historical cost
@@ -295,23 +300,23 @@ def train_model(X, y, epoch, layer_dim, learning_rate):
 
     for i in range(1, epoch):
         # Step 2: Forward propagation
-        AL, caches = full_forward_propagation(X, parameters)
+        a_last, caches = full_forward_propagation(X, parameters)
 
         # Step 3: Calculate and store cost
-        cost = cost_function(AL, y)
+        cost = cost_function(a_last, y)
         cost_history.append(cost)
 
-        accuracy = get_accuracy(AL, y)
+        accuracy = get_accuracy(a_last, y)
         accuracy_history.append(accuracy)
 
         epoches.append(i)
         # Step 4: Backward propagation
-        grads = full_backward_propagation(AL, y, caches, parameters)
+        grads = full_backward_propagation(a_last, y, caches, parameters)
 
         # Step 5: Update parameters
         parameters = update_parameters(parameters, grads, learning_rate)
 
-        if (i % 100 == 0):
+        if i % 100 == 0:
             print('i=' + str(i) + ' cost = ' + str(cost))
             print('i=' + str(i) + ' accuracy = ' + str(accuracy))
             # print(parameters)
