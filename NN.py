@@ -40,12 +40,20 @@ print(f'X[0] - {X[0]}')
 print(f'y - {y.shape}')
 print(f'y[0] - {y[0]}')
 
+input_size = X.shape[1]
+hidden_size = 50
+output_size = 1
+
 
 #########################################
 # Step 1: Initialize Parameters
 #########################################
 def initialize_parameters(layer_dim):
-    np.random.seed(100)
+    if os.path.exists('weights.npy'):
+        param = np.load('weights.npy', allow_pickle=True)
+        return dict(param.flatten()[0])
+
+    # np.random.seed(100)
     parameters = {}
 
     for i in range(1, len(layer_dim)):
@@ -56,8 +64,8 @@ def initialize_parameters(layer_dim):
 
 
 # Test
-test_parameters = initialize_parameters([34, 34, 1])
-print(test_parameters)
+test_parameters = initialize_parameters([input_size, hidden_size, output_size])
+# print(test_parameters)
 
 
 #######################################
@@ -87,8 +95,8 @@ def single_layer_forward_propagation(x, w_cur, b_cur, activation):
 
 # Test
 test_z, test_a = single_layer_forward_propagation(np.transpose(X), test_parameters['w1'], test_parameters['b1'], 'relu')
-print(test_z)
-print(test_a)
+# print(test_z)
+# print(test_a)
 
 
 def full_forward_propagation(x, parameters):
@@ -125,7 +133,7 @@ def full_forward_propagation(x, parameters):
 
 # Test
 test_AL, caches = full_forward_propagation(X.T, test_parameters)
-print(test_AL)
+# print(test_AL)
 
 
 #########################################
@@ -142,7 +150,7 @@ def cost_function(a_last, y):
 
 # Test
 test_cost = cost_function(test_AL, y)
-print(test_cost)
+# print(test_cost)
 
 
 def convert_prob_into_class(a_last):
@@ -160,8 +168,8 @@ def get_accuracy(a_last, Y):
 # Test
 test_y_hat = convert_prob_into_class(test_AL)
 test_accuracy = get_accuracy(test_AL, y)
-print(test_y_hat)
-print(test_accuracy)
+# print(test_y_hat)
+# print(test_accuracy)
 
 
 ######################################
@@ -213,9 +221,9 @@ def single_layer_backward_propagation(
 dA_cur = - (np.divide(y, test_AL) - np.divide((1 - y), (1 - test_AL)))
 dA_prev, dw_cur, db_cur = single_layer_backward_propagation(dA_cur, test_parameters['w2'], test_parameters['b2'],
                                                             caches['z2'], caches['a1'], 'sigmoid')
-print(dw_cur)
-print(db_cur)
-print(dA_prev)
+# print(dw_cur)
+# print(db_cur)
+# print(dA_prev)
 
 
 def full_backward_propagation(a_last, y, caches, parameters):
@@ -256,10 +264,10 @@ def full_backward_propagation(a_last, y, caches, parameters):
 
 # Test
 test_grads = full_backward_propagation(test_AL, y, caches, test_parameters)
-print(test_grads['dw2'])
-print(test_grads['db2'])
-print(test_grads['dw1'])
-print(test_grads['db1'])
+# print(test_grads['dw2'])
+# print(test_grads['db2'])
+# print(test_grads['dw1'])
+# print(test_grads['db1'])
 
 
 ########################################
@@ -275,16 +283,16 @@ def update_parameters(parameters, grads, learning_rate):
 
 # test
 test_parameters_update = update_parameters(test_parameters, test_grads, 1)
-print(test_parameters_update['w1'])
-print(test_parameters_update['b1'])
-print(test_parameters_update['w2'])
-print(test_parameters_update['b2'])
+# print(test_parameters_update['w1'])
+# print(test_parameters_update['b1'])
+# print(test_parameters_update['w2'])
+# print(test_parameters_update['b2'])
 
 ###############################
 # Create Random Dataset
 ###############################
-N_SAMPLES = 1000
-X, y = make_moons(n_samples=N_SAMPLES, noise=0.2, random_state=100)
+# N_SAMPLES = 1000
+# X, y = make_moons(n_samples=N_SAMPLES, noise=0.2, random_state=100)
 
 
 #######################################
@@ -323,9 +331,14 @@ def train_model(X, y, epoch, layer_dim, learning_rate):
 
     return parameters, cost_history, accuracy_history, epoches
 
-
 # Test
-test_parameters, test_cost, test_accuracy, test_epoches = train_model(X.T, y, 1000, [2, 25, 100, 100, 10, 1], 0.01)
+test_parameters, test_cost, test_accuracy, test_epoches = train_model(
+    X.T,
+    y,
+    6000,
+    [input_size, hidden_size, output_size],
+    0.1
+)
 
 ####################################
 # Visualize cost and accuracy
@@ -344,3 +357,20 @@ plt.scatter(data['Epoch'], data['Accuracy'], c='g')
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.show()
+
+# Save weights
+np.save('weights.npy', test_parameters)
+
+# Test with validation dataset
+
+a_last, caches = full_forward_propagation(x_cv.T, test_parameters)
+
+# Step 3: Calculate and store cost
+cost = cost_function(a_last, y_cv)
+# cost_history.append(cost)
+
+accuracy = get_accuracy(a_last, y_cv)
+# accuracy_history.append(accuracy)
+
+print(cost)
+print(accuracy)

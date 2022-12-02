@@ -1,12 +1,13 @@
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
 import numpy as np
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
 
 OUTPUT_COLUMN = "Attrition"
-# COLUMNS = ["Attrition", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "TotalWorkingYears"]
+# COLUMNS = ["Attrition", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "TotalWorkingYears", "Age", "YearsWithCurrManager", "HourlyRate", "JobLevel"]
 # data = pd.read_csv('data.csv', usecols=COLUMNS)
 data = pd.read_csv('data.csv')
 columns_in_order = data.columns.values
@@ -43,13 +44,19 @@ data_scaled = MinMaxScaler().fit_transform(data)
 
 df = pd.DataFrame(data_scaled, columns=columns_in_order)
 
+output = df[OUTPUT_COLUMN]
+df = df.drop(OUTPUT_COLUMN, axis=1)
+
+pca = PCA(n_components=10)
+df = pca.fit_transform(df)
+
 print('Dividir dataset en train, validation, test...')
 x_train, x, y_train, y = train_test_split(
-    df.drop(OUTPUT_COLUMN, axis=1),
-    df[OUTPUT_COLUMN],
+    df,
+    output,
     test_size=0.2,
     random_state=10,
-    stratify=df[OUTPUT_COLUMN]
+    stratify=output
 )
 
 x_test, x_cv, y_test, y_cv = train_test_split(
