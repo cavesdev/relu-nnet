@@ -60,15 +60,6 @@ x_test, x_cv, y_test, y_cv = train_test_split(
     stratify=y
 )
 
-# TODO: remove
-print(x_test.values.shape)
-print(y_test.values.shape)
-
-# output = np.array([[x] for x in df.loc[:,OUTPUT_COLUMN].to_list()])
-# df = df.drop(OUTPUT_COLUMN, axis=1)
-# columns_in_order = np.delete(columns_in_order, np.where(columns_in_order == OUTPUT_COLUMN))
-# input = df[columns_in_order].values
-
 np.save(os.path.join('data', 'x_train.npy'), x_train)
 np.save(os.path.join('data', 'x_cv.npy'), x_cv)
 np.save(os.path.join('data', 'x_test.npy'), x_test)
